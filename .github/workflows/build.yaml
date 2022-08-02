@@ -1,0 +1,40 @@
+name: Build
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push events but only for the main branch
+  push:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: qmkfm/qmk_cli
+    env:
+      QMK_HOME: ${{ github.workspace }}/qmk_firmware
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: qmk/qmk_firmware
+        path: qmk_firmware
+
+    - uses: actions/checkout@v3
+      with:
+        path: qmk_firmware/keyboards/torn/keymaps/alphadel
+
+    - name: QMK Setup
+      run: qmk setup -y
+
+    - name: Run Build
+      run: qmk compile -kb torn -km alphadel
+
+    - name: Upload Hex Firmware
+      uses: actions/upload-artifact@v3
+      with:
+        name: hex-firwmare
+        path: ./qmk_firmware/torn_alphadel.hex
+        retention-days: 1
